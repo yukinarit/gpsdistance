@@ -8,8 +8,9 @@ project(${PROJECT_NAME})
 #--------------------
 # directories 
 #--------------------
-set(SRC_DIR ./src)
-set(INCLUDE_DIR ./include)
+set(PROJECT_DIR ${CMAKE_SOURCE_DIR})
+set(SRC_DIR ${PROJECT_DIR}/src)
+set(INCLUDE_DIR ${PROJECT_DIR}/include)
 
 #--------------------
 # compiler options
@@ -35,9 +36,27 @@ link_directories(
 	)
 
 #--------------------
-# 
+#  
 #--------------------
-add_library(lib${PROJECT_NAME} ${SRC_DIR}/distance.cpp)
-add_executable(${PROJECT_NAME} ${SRC_DIR}/main.cpp)
-target_link_libraries(${PROJECT_NAME} lib${PROJECT_NAME})
+add_library(lib${PROJECT_NAME} ${SRC_DIR}/gpsdistance.cpp)
+#add_executable(${PROJECT_NAME} ${SRC_DIR}/main.cpp)
+#target_link_libraries(${PROJECT_NAME} lib${PROJECT_NAME})
+
+#--------------------
+# Testing  
+#--------------------
+if (test)
+	add_subdirectory(lib/googletest)
+
+	enable_testing()
+
+	include_directories()
+
+	add_executable(runUnitTests test/main.cpp)
+	target_link_libraries(runUnitTests  gtest gtest_main)
+	target_link_libraries(runUnitTests  lib${PROJECT_NAME})
+
+	add_test(NAME that-test-I-made COMMAND runUnitTests)
+	add_test(that-other-test-I-made runUnitTests)
+endif()
 
