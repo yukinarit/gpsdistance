@@ -5,7 +5,7 @@ namespace gpsdistance
 {
 
 static const double EARTH_RADIUS_KM = 6378.137;
-static const double EARTH_RADIUS_M = EARTH_RADIUS_KM * 1000.0;
+static const double EARTH_RADIUS_METER = EARTH_RADIUS_KM * 1000.0;
     
 struct LatLng
 {
@@ -19,7 +19,7 @@ struct LatLng
 };
     
 double radians(double degree);
-LatLng radians(LatLng latlng);
+LatLng radians(const LatLng& latlng);
     
 double distance(const LatLng& from, const LatLng& to);
     
