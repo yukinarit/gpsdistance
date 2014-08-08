@@ -69,6 +69,16 @@ T distance(const LatLng_t<T>& from, const LatLng_t<T>& to)
     return d;
 }
 
+template<typename T>
+LatLng_t<T> latitudinal_point(const LatLng_t<T>& from, T latitudinal_distance)
+{
+	LatLng_t<T> to;
+	to.lng = from.lng ;
+	to.lat = from.at - (latitudinal_distance / EARTH_RADIUS_KM);
+
+	return to;
+}
+
 } // namespace gpsdistance
 
 #endif // GPSDISTANCE_H
