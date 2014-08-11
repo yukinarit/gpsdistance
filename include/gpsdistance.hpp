@@ -9,19 +9,20 @@
 namespace gpsdistance
 {
 
-static const double EARTH_RADIUS_KM = 6378.137;
+static const double EARTH_RADIUS_KM = 6371.0;
 static const double EARTH_RADIUS_METER = EARTH_RADIUS_KM * 1000.0;
 
 
 template <typename T>
-struct LatLng_t
+struct LatLng
 {
-    LatLng_t()
+	typedef T value_type;
+    LatLng()
         : lat {}
         , lng {}
     {}
 
-    LatLng_t(T latitude, T longitude)
+    LatLng(T latitude, T longitude)
         : lat{latitude}
         , lng{longitude}
     {}
@@ -29,7 +30,23 @@ struct LatLng_t
     T lat;
     T lng;
 };
-typedef LatLng_t<double> LatLng;
+
+
+template <typename T>
+struct Box2D
+{
+	typedef T value_type;
+	Box2D()
+	{}
+
+	Box2D(const LatLng<T>& southwest, const LatLng<T>& northeast)
+		: southwest(southwest)
+		, northeast(northeast)
+	{}
+
+	LatLng<T> southwest;
+	LatLng<T> northeast;
+};
 
 
 template <typename T>
@@ -40,24 +57,43 @@ T radians(const T& degree)
 
 
 template <typename T>
-LatLng_t<T> radians(const LatLng_t<T>& latlng)
+LatLng<T> radians(const LatLng<T>& latlng)
 {
-    return LatLng_t<T> {
+    return LatLng<T> {
         radians(latlng.lat)
         , radians(latlng.lng)
     };
 }
     
+
+template <typename T>
+T degrees(const T& radian)
+{
+	return radian * 180.0 / M_PI;
+}
+
+template <typename T>
+LatLng<T> degrees(const LatLng<T>& latlng)
+{
+	return LatLng<T>(
+		degrees(latlng.lat)
+		, degrees(latlng.lng)
+	);
+}
+
+
+
+
     
 /*
  *
  *
  */
 template <typename T>
-T distance(const LatLng_t<T>& from, const LatLng_t<T>& to)
+T distance(const LatLng<T>& from, const LatLng<T>& to)
 {
-    LatLng_t<T> rfrom = radians(from);
-    LatLng_t<T> rto = radians(to);
+    LatLng<T> rfrom = radians(from);
+    LatLng<T> rto = radians(to);
 
     T dlat = rto.lat - rfrom.lat;
     T dlng = rto.lng - rfrom.lng;
@@ -69,14 +105,41 @@ T distance(const LatLng_t<T>& from, const LatLng_t<T>& to)
     return d;
 }
 
-template<typename T>
-LatLng_t<T> latitudinal_point(const LatLng_t<T>& from, T latitudinal_distance)
-{
-	LatLng_t<T> to;
-	to.lng = from.lng ;
-	to.lat = from.at - (latitudinal_distance / EARTH_RADIUS_KM);
 
-	return to;
+template<typename T>
+LatLng<T> latitudinal_point(const LatLng<T>& from, T latitudinal_distance)
+{
+	LatLng<T> to;
+	to.lng = radians(from.lng);
+	to.lat = radians(from.lat) + (latitudinal_distance / EARTH_RADIUS_KM);
+
+	return degrees(to);
+}
+
+
+template<typename T>
+LatLng<T> longitudinal_point(const LatLng<T>& from, T longitudinal_distance)
+{
+	LatLng<T> to;
+	to.lat = radians(from.lat);
+	to.lng = radians(from.lng) + (longitudinal_distance / EARTH_RADIUS_KM / cos(radians(from.lat)));
+
+	return degrees(to);
+}
+
+template<typename T>
+Box2D<T> extent(const LatLng<T>& center, T latitudinal_distance, T longitudinal_distance)
+{
+	T lat_diff_degree = latitudinal_point(center, std::abs(latitudinal_distance)).lat - center.lat;
+	T lng_diff_degree = longitudinal_point(center, std::abs(longitudinal_distance)).lng - center.lng;
+
+	LatLng<T> southwest(center.lat - lat_diff_degree, center.lng - lng_diff_degree);
+	LatLng<T> northeast(center.lat + lat_diff_degree, center.lng + lng_diff_degree);
+
+	return Box2D<T>(
+			southwest
+			, northeast
+	   );
 }
 
 } // namespace gpsdistance
