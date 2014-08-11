@@ -9,6 +9,18 @@ typedef LatLng<double> LatLng64;
 typedef Box2D<double> Box64;
 
 
+TEST(GpsDistanceTest, latlng)
+{
+    LatLng64 HONMACHI_STATION(34.682082, 135.498971);
+	EXPECT_STREQ("Lat:34.68208, Lng:135.499", HONMACHI_STATION.toString().c_str());
+}
+
+TEST(GpsDistanceTest, box)
+{
+    Box64 box(LatLng64(34.682082, 135.498971), LatLng64(34.675175, 135.500319));
+	EXPECT_STREQ("SouthWest:(Lat:34.68208, Lng:135.499), NorthEast:(Lat:34.67518, Lng:135.5003)", box.toString().c_str());
+}
+
 TEST(GpsDistanceTest, radians)
 {
     EXPECT_FLOAT_EQ( 0.0, radians(0.0) );
@@ -75,5 +87,18 @@ TEST(GpsDistanceTest, extent)
     EXPECT_FLOAT_EQ( west.lng,  extent2km.southwest.lng );
     EXPECT_FLOAT_EQ( north.lat, extent2km.northeast.lat );
     EXPECT_FLOAT_EQ( east.lng,  extent2km.northeast.lng );
+}
+
+TEST(GpsDistanceTest, containsWithinRadius)
+{
+    LatLng64 center(34.682082, 135.498971);
+	double radius = 2.0;
+
+	LatLng64 east2km = longitudinal_point(center, static_cast<LatLng64::value_type>(2));
+	EXPECT_TRUE(containsWithinRadius(center, radius, east2km));
+
+	LatLng64 east2km_and_abit(east2km.lat+0.001, east2km.lng+0.001);
+	EXPECT_FALSE(containsWithinRadius(center, radius, east2km_and_abit));
+
 }
 

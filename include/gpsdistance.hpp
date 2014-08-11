@@ -2,6 +2,8 @@
 #define GPSDISTANCE_H
 
 #include <cmath>
+#include <sstream>
+#include <iomanip>
 
 // http://www.movable-type.co.uk/scripts/latlong.html
 // https://github.com/johnmeehan/Distance/blob/master/Distance.cpp
@@ -27,6 +29,15 @@ struct LatLng
         , lng{longitude}
     {}
 
+    std::string toString() const
+    {
+        std::ostringstream s;
+        s.precision(7);
+        s << "Lat:" << lat << ", ";
+        s << "Lng:" << lng;
+        return s.str();
+    }
+
     T lat;
     T lng;
 };
@@ -43,6 +54,15 @@ struct Box2D
 		: southwest(southwest)
 		, northeast(northeast)
 	{}
+
+    std::string toString() const
+    {
+		std::ostringstream s;
+		s.precision(7);
+		s << "SouthWest:(" << southwest.toString() << "), ";
+		s << "NorthEast:(" << northeast.toString() << ")";
+		return s.str();
+    }
 
 	LatLng<T> southwest;
 	LatLng<T> northeast;
@@ -140,6 +160,13 @@ Box2D<T> extent(const LatLng<T>& center, T latitudinal_distance, T longitudinal_
 			southwest
 			, northeast
 	   );
+}
+
+template<typename T>
+bool containsWithinRadius(const LatLng<T>& center, T radius, const LatLng<T>& point)
+{
+	T d = distance(center, point);
+	return d <= radius;
 }
 
 } // namespace gpsdistance
